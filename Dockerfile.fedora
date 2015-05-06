@@ -1,0 +1,15 @@
+FROM fedora
+MAINTAINER langdon <langdon@fedoraproject.org>
+RUN yum clean all && yum -y update
+RUN yum -y install kubernetes
+RUN yum clean all
+
+ADD gen-samples.py /
+RUN chmod u+x /gen-samples.py
+VOLUME /kubernetes-config
+WORKDIR /kubernetes-config
+
+LABEL RUN docker run --rm -it --privileged -v /run:/run -v /:/host -v ${CONFDIR}:/kubernetes-config/ --name NAME -e NAME=NAME -e IMAGE=IMAGE IMAGE /usr/bin/kubectl --kubeconfig="/kubernetes-config/kube-config"
+LABEL INSTALL docker run --rm -it --privileged -v /run:/run -v /:/host -v ${CONFDIR}:/kubernetes-config/ --name NAME -e NAME=NAME -e IMAGE=IMAGE IMAGE /gen-samples.py
+
+CMD /usr/bin/kubectl --kubeconfig="/kubernetes-config/kube-config"
