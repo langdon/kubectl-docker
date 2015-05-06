@@ -9,7 +9,14 @@ RUN chmod u+x /gen-samples.py
 VOLUME /kubernetes-config
 WORKDIR /kubernetes-config
 
-LABEL RUN docker run --rm -it --privileged -v /run:/run -v /:/host -v ${CONFDIR}:/kubernetes-config/ --name NAME -e NAME=NAME -e IMAGE=IMAGE IMAGE /usr/bin/kubectl --kubeconfig="/kubernetes-config/kube-config"
-LABEL INSTALL docker run --rm -it --privileged -v /run:/run -v /:/host -v ${CONFDIR}:/kubernetes-config/ --name NAME -e NAME=NAME -e IMAGE=IMAGE IMAGE /gen-samples.py
+LABEL RUN docker run --rm -it --privileged -v /run:/run -v /:/host -v ${CONFDIR}:/kubernetes-config/ --name NAME -e CONFDIR=${CONFDIR} -e NAME=NAME -e IMAGE=IMAGE IMAGE /usr/bin/kubectl --kubeconfig="${CONFDIR}/kube-config"
+LABEL INSTALL docker run --rm -it --privileged -v /run:/run -v /:/host -v ${CONFDIR}:/kubernetes-config/ --name NAME -e CONFDIR=${CONFDIR} -e NAME=NAME -e IMAGE=IMAGE IMAGE /gen-samples.py
+#for some reason ^^^ don't work with atomic
 
-CMD /usr/bin/kubectl --kubeconfig="/kubernetes-config/kube-config"
+ENV KUBE-CONFIG=~/.kube/config
+VOLUME /root
+
+#CMD /usr/bin/kubectl --kubeconfig="$KUBE-CONFIG"
+#ENTRYPOINT /usr/bin/kubectl --kubeconfig=$KUBE-CONFIG 
+ENTRYPOINT ["/usr/bin/kubectl --kubeconfig=/root/.kube/config "] 
+
